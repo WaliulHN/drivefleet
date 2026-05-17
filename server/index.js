@@ -4,6 +4,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
+import carRoutes from './routes/cars.js'
 
 dotenv.config()
 const app = express()
@@ -17,6 +18,7 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use('/api/auth', authRoutes)
+app.use('/api/cars', carRoutes)
 
 app.get('/', (req, res) => {
   res.send('DriveFleet API is running')
