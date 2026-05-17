@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
 import carRoutes from './routes/cars.js'
+import bookingRoutes from './routes/bookings.js'
 
 dotenv.config()
 const app = express()
@@ -19,6 +20,7 @@ app.use(cookieParser())
 
 app.use('/api/auth', authRoutes)
 app.use('/api/cars', carRoutes)
+app.use('/api/bookings', bookingRoutes)
 
 app.get('/', (req, res) => {
   res.send('DriveFleet API is running')
