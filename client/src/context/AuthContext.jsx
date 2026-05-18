@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import api from '../config/axios'
 
 const AuthContext = createContext(null)
+const API_URL = 'http://localhost:5000/api'
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -9,8 +9,10 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await api.get('/auth/me')
-      setUser(response.data.user)
+      const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' })
+      if (!res.ok) throw new Error('Not authenticated')
+      const data = await res.json()
+      setUser(data.user)
     } catch {
       setUser(null)
     } finally {
@@ -19,24 +21,39 @@ export const AuthProvider = ({ children }) => {
   }
 
   const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password })
-    setUser(response.data.user)
-    return response.data
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.message || 'Login failed')
+    setUser(data.user)
+    return data
   }
 
   const register = async (name, email, password) => {
-    const response = await api.post('/auth/register', { name, email, password })
-    return response.data
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name, email, password })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.message || 'Registration failed')
+    return data
   }
 
   const logout = async () => {
-    await api.post('/auth/logout')
+    await fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    })
     setUser(null)
   }
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
+  useEffect(() => { checkAuth() }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout }}>
@@ -47,8 +64,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider')
   return context
 }

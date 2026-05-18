@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../config/axios'
 
 const Home = () => {
   const [cars, setCars] = useState([])
@@ -9,7 +8,8 @@ const Home = () => {
   useEffect(() => {
     const fetchCars = async () => {
       try {
-        const { data } = await api.get('/cars')
+        const res = await fetch('http://localhost:5000/api/cars')
+        const data = await res.json()
         setCars(data.slice(0, 6))
       } catch (err) {
         console.error('Failed to fetch cars')
@@ -60,7 +60,7 @@ const Home = () => {
           <h2 className="text-3xl font-bold mb-6">Why Choose DriveFleet?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
             <div className="p-6">
-              <h3 className="text-xl font-semibold mb-3">️ Fully Insured</h3>
+              <h3 className="text-xl font-semibold mb-3">🛡️ Fully Insured</h3>
               <p className="text-base-content/70">Every vehicle comes with comprehensive insurance coverage.</p>
             </div>
             <div className="p-6">
@@ -68,7 +68,7 @@ const Home = () => {
               <p className="text-base-content/70">Reserve your car in seconds with our seamless checkout.</p>
             </div>
             <div className="p-6">
-              <h3 className="text-xl font-semibold mb-3">📍 24/7 Support</h3>
+              <h3 className="text-xl font-semibold mb-3"> 24/7 Support</h3>
               <p className="text-base-content/70">Roadside assistance and customer care anytime you need.</p>
             </div>
           </div>

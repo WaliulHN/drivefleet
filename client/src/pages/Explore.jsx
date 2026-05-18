@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../config/axios'
 
 const Explore = () => {
   const [cars, setCars] = useState([])
@@ -16,7 +15,8 @@ const Explore = () => {
         if (search) params.append('search', search)
         if (type !== 'all') params.append('type', type)
         
-        const { data } = await api.get(`/cars?${params.toString()}`)
+        const res = await fetch(`http://localhost:5000/api/cars?${params.toString()}`)
+        const data = await res.json()
         setCars(data)
       } catch (err) {
         console.error('Failed to fetch cars')
