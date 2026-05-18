@@ -6,29 +6,32 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
 import carRoutes from './routes/cars.js'
 import bookingRoutes from './routes/bookings.js'
+import healthRoutes from './routes/health.js'
 
 dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5000
 
-app.use(cors({
-  origin: process.env.CLIENT_URL,
-  credentials: true
-}))
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }))
 app.use(express.json())
 app.use(cookieParser())
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  next()
+})
 
 app.use('/api/auth', authRoutes)
 app.use('/api/cars', carRoutes)
 app.use('/api/bookings', bookingRoutes)
+app.use('/api/health', healthRoutes)
 
 app.get('/', (req, res) => {
   res.send('DriveFleet API is running')
 })
 
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'Route not found' })
-})
+app.use((req, res) => res.status(404).json({ message: 'Route not found' }))
 
 app.use((err, req, res, next) => {
   console.error(err.stack)
@@ -36,12 +39,5 @@ app.use((err, req, res, next) => {
 })
 
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server active on port ${PORT}`)
-    })
-  })
-  .catch(err => {
-    console.error('Database connection failed')
-    process.exit(1)
-  })
+  .then(() => app.listen(PORT, () => console.log(`Server active on port ${PORT}`)))
+  .catch(err => { console.error('Database connection failed'); process.exit(1) })
