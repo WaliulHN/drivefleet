@@ -25,9 +25,9 @@ const Home = () => {
       <div className="hero min-h-[70vh] bg-base-200">
         <div className="hero-content text-center">
           <div className="max-w-2xl">
-            <h1 className="text-5xl font-bold">Premium Car Rental</h1>
-            <p className="py-6 text-lg">Find your perfect ride with DriveFleet. Luxury, comfort, and reliability in every booking.</p>
-            <Link to="/explore" className="btn btn-primary btn-lg">Explore Cars</Link>
+          <h1 className="text-5xl font-bold">Premium Car Rental</h1>
+          <p className="py-6 text-lg">Find your perfect ride with DriveFleet. Luxury, comfort, and reliability in every booking.</p>
+          <Link to="/explore" className="btn btn-primary btn-lg">Explore Cars</Link>
           </div>
         </div>
       </div>
@@ -39,17 +39,17 @@ const Home = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 max-w-7xl mx-auto">
             {cars.map(car => (
-              <div key={car._id} className="card bg-base-100 shadow-xl">
+            <div key={car._id} className="card bg-base-100 shadow-xl">
                 <figure><img src={car.image} alt={car.name} className="h-48 w-full object-cover" /></figure>
-                <div className="card-body">
+              <div className="card-body">
                   <h2 className="card-title">{car.name}</h2>
                   <p className="text-sm">{car.type} • {car.seats} Seats</p>
-                  <div className="card-actions justify-between items-center mt-4">
-                    <span className="text-xl font-bold text-primary">${car.price}/day</span>
-                    <Link to={`/car/${car._id}`} className="btn btn-sm btn-primary">View Details</Link>
+                <div className="card-actions justify-between items-center mt-4">
+                  <span className="text-xl font-bold text-primary">${car.price}/day</span>
+                  <Link to={`/car/${car._id}`} className="btn btn-sm btn-primary">View Details</Link>
                   </div>
-                </div>
               </div>
+            </div>
             ))}
           </div>
         )}
@@ -90,9 +90,9 @@ const Home = () => {
               <p className="text-sm mt-2">Confirm your dates and pay online safely.</p>
             </div>
             <div className="flex-1 p-4">
-              <div className="text-4xl mb-3">3️⃣</div>
-              <h3 className="font-semibold">Hit the Road</h3>
-              <p className="text-sm mt-2">Pick up your car and enjoy the journey.</p>
+            <div className="text-4xl mb-3">3️⃣</div>
+            <h3 className="font-semibold">Hit the Road</h3>
+            <p className="text-sm mt-2">Pick up your car and enjoy the journey.</p>
             </div>
           </div>
         </div>
