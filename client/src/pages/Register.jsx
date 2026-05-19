@@ -35,7 +35,7 @@ const Register = () => {
             <input 
               type="text" 
               placeholder="Enter name" 
-              className="input input-bordered" 
+              className="input input-bordered text-black" 
               required 
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -49,7 +49,7 @@ const Register = () => {
             <input 
               type="url" 
               placeholder="Enter photo URL" 
-              className="input input-bordered" 
+              className="input input-bordered text-black" 
               value={photo}
               onChange={(e) => setPhoto(e.target.value)}
             />
@@ -62,7 +62,7 @@ const Register = () => {
             <input 
               type="email" 
               placeholder="Enter email" 
-              className="input input-bordered" 
+              className="input input-bordered text-black" 
               required 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -76,7 +76,7 @@ const Register = () => {
             <input 
               type="password" 
               placeholder="Enter password" 
-              className="input input-bordered" 
+              className="input input-bordered text-black" 
               required 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
