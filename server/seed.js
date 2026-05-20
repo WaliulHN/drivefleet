@@ -20,12 +20,11 @@ const sampleCars = [
     name: 'BMW X5',
     price: 95,
     type: 'SUV',
-    image: 'https://images.unsplash.com/photo-1556189250-72ba95452da9?w=800',
+    image: '/images/BMW_X5.jpg',  // Update this
     seats: 7,
     location: 'Los Angeles, CA',
-    description: 'Spacious and luxurious SUV with all-wheel drive. Ideal for family trips and off-road adventures.',
-    available: true,
-    owner: null
+    description: '...',
+    available: true
   },
   {
     name: 'Tesla Model S',
@@ -39,15 +38,14 @@ const sampleCars = [
     owner: null
   },
   {
-    name: 'Porsche 911 Carrera',
+     name: 'Porsche 911 Carrera',
     price: 180,
     type: 'Coupe',
-    image: 'https://images.unsplash.com/photo-1503376763036-066120622c74?w=800',
+    image: '/images/Porsche_911_Carrera.jpg',  // Update this
     seats: 4,
     location: 'Miami, FL',
-    description: 'Iconic sports car with legendary handling and timeless design. The ultimate driving machine.',
-    available: true,
-    owner: null
+    description: '...',
+    available: true
   },
   {
     name: 'Range Rover Vogue',
@@ -64,12 +62,11 @@ const sampleCars = [
     name: 'Mazda MX-5 Miata',
     price: 65,
     type: 'Convertible',
-    image: 'https://images.unsplash.com/photo-1552519507-cf0d5a6e5d0f?w=800',
+    image: '/images/Mazda_MX-5_Miata.jpg',  // Update this
     seats: 2,
     location: 'Seattle, WA',
-    description: 'Fun and affordable convertible roadster. Perfect for sunny day drives along the coast.',
-    available: true,
-    owner: null
+    description: '...',
+    available: true
   }
 ]
 

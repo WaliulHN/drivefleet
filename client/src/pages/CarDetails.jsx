@@ -1,436 +1,127 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
-const AddCar = () => {
+const CarDetails = () => {
+  const { id } = useParams()
+  const { user } = useAuth()
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    type: 'Sedan',
-    seats: '',
-    image: '',
-    location: '',
-    description: '',
-    available: true
-  })
+  
+  const [car, setCar] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
 
-  const handleInput = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
-  }
+  useEffect(() => {
+    const fetchCar = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/cars/${id}`)
+        const data = await res.json()
+        if (res.ok) setCar(data)
+      } catch (err) {
+        console.error('Failed to fetch car')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchCar()
+  }, [id])
 
-  const submitCar = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-
+  const handleBooking = async () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    
     try {
-      const response = await fetch('http://localhost:5000/api/cars', {
+      const res = await fetch('http://localhost:5000/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ carId: car._id, totalPrice: car.price })
       })
-
-      const result = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to add car')
-      }
-
-      navigate('/my-cars')
-    } catch (error) {
-      alert(error.message)
-    } finally {
-      setLoading(false)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message)
+      alert('Booking successful!')
+      setModalOpen(false)
+    } catch (err) {
+      alert(err.message)
     }
   }
 
+  if (loading) return <div className="flex justify-center items-center min-h-screen"><span className="loading loading-spinner loading-lg text-orange-500"></span></div>
+  if (!car) return <div className="text-center py-20 text-xl text-slate-600">Car not found <button onClick={() => navigate('/explore')} className="text-orange-500 underline ml-2">Go back</button></div>
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      paddingTop: '120px', 
-      paddingBottom: '60px',
-      paddingLeft: '20px',
-      paddingRight: '20px',
-      boxSizing: 'border-box'
-    }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-          <h1 style={{ 
-            fontSize: '42px', 
-            fontWeight: 'bold', 
-            color: 'white',
-            marginBottom: '12px',
-            textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-            letterSpacing: '-0.5px'
-          }}>
-            List Your Vehicle
-          </h1>
-          <p style={{ 
-            fontSize: '18px', 
-            color: 'rgba(255,255,255,0.95)',
-            fontWeight: '400'
-          }}>
-            Add your car to our premium fleet and start earning
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+         
+            <div className="relative h-80 sm:h-96 lg:h-auto bg-slate-200">
+              <img src={car.image} alt={car.name} className="w-full h-full object-cover" />
+              <div className="absolute top-6 left-6 bg-orange-500 text-white px-5 py-2 rounded-full font-bold text-lg shadow-lg">
+                ${car.price}<span className="text-sm font-normal ml-1">/day</span>
+              </div>
+            </div>
+
+        
+            <div className="p-8 lg:p-12 flex flex-col justify-center">
+              <div className="mb-6">
+                <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-4 leading-tight">{car.name}</h1>
+                <div className="flex flex-wrap gap-3 mb-6">
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-slate-100 text-slate-700 border border-slate-200">{car.type}</span>
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-slate-100 text-slate-700 border border-slate-200">{car.seats} Seats</span>
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-slate-100 text-slate-700 border border-slate-200">{car.location}</span>
+                </div>
+              </div>
+
+              <div className="mb-10">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Description</h3>
+                <p className="text-slate-700 leading-relaxed text-lg">{car.description}</p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+                {car.available ? (
+                  <button onClick={() => setModalOpen(true)} className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-1">
+                    Book Now
+                  </button>
+                ) : (
+                  <button disabled className="flex-1 bg-slate-200 text-slate-400 py-4 rounded-xl font-bold text-lg cursor-not-allowed">
+                    Currently Unavailable
+                  </button>
+                )}
+                <button onClick={() => navigate('/explore')} className="px-8 py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-300 transition-colors">
+                  Back to Explore
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <form onSubmit={submitCar} style={{
-          background: 'white',
-          borderRadius: '20px',
-          padding: '40px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-        }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '600', 
-                color: '#374151',
-                fontSize: '14px'
-              }}>
-                Vehicle Name <span style={{ color: '#ef4444' }}>*</span>
-              </label>
-              <input
-                type="text"
-                name="name"
-                placeholder="e.g. Mercedes-Benz C-Class"
-                value={formData.name}
-                onChange={handleInput}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid #e5e7eb',
-                  fontSize: '15px',
-                  outline: 'none',
-                  transition: 'all 0.2s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#8b5cf6'
-                  e.target.style.boxShadow = '0 0 0 3px rgba(139,92,246,0.1)'
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb'
-                  e.target.style.boxShadow = 'none'
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '600', 
-                color: '#374151',
-                fontSize: '14px'
-              }}>
-                Daily Rate (USD) <span style={{ color: '#ef4444' }}>*</span>
-              </label>
-              <input
-                type="number"
-                name="price"
-                placeholder="75"
-                value={formData.price}
-                onChange={handleInput}
-                required
-                min="1"
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid #e5e7eb',
-                  fontSize: '15px',
-                  outline: 'none',
-                  transition: 'all 0.2s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#8b5cf6'
-                  e.target.style.boxShadow = '0 0 0 3px rgba(139,92,246,0.1)'
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb'
-                  e.target.style.boxShadow = 'none'
-                }}
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '600', 
-                color: '#374151',
-                fontSize: '14px'
-              }}>
-                Vehicle Type <span style={{ color: '#ef4444' }}>*</span>
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleInput}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid #e5e7eb',
-                  fontSize: '15px',
-                  outline: 'none',
-                  backgroundColor: 'white',
-                  cursor: 'pointer',
-                  boxSizing: 'border-box'
-                }}
-              >
-                <option value="Sedan">Sedan</option>
-                <option value="SUV">SUV</option>
-                <option value="Coupe">Coupe</option>
-                <option value="Convertible">Convertible</option>
-                <option value="Electric">Electric</option>
-                <option value="Luxury">Luxury</option>
-                <option value="Sports">Sports</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '600', 
-                color: '#374151',
-                fontSize: '14px'
-              }}>
-                Seating Capacity <span style={{ color: '#ef4444' }}>*</span>
-              </label>
-              <input
-                type="number"
-                name="seats"
-                placeholder="5"
-                value={formData.seats}
-                onChange={handleInput}
-                required
-                min="1"
-                max="8"
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid #e5e7eb',
-                  fontSize: '15px',
-                  outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: '600', 
-              color: '#374151',
-              fontSize: '14px'
-            }}>
-              Cover Image URL <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-            <input
-              type="url"
-              name="image"
-              placeholder="https://images.unsplash.com/photo-example"
-              value={formData.image}
-              onChange={handleInput}
-              required
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '10px',
-                border: '1px solid #e5e7eb',
-                fontSize: '15px',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-            <p style={{ 
-              fontSize: '12px', 
-              color: '#6b7280', 
-              marginTop: '6px' 
-            }}>
-              Use a high-quality image for better visibility
-            </p>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: '600', 
-              color: '#374151',
-              fontSize: '14px'
-            }}>
-              Pickup Location <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-            <input
-              type="text"
-              name="location"
-              placeholder="e.g. Downtown Manhattan, New York"
-              value={formData.location}
-              onChange={handleInput}
-              required
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '10px',
-                border: '1px solid #e5e7eb',
-                fontSize: '15px',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: '600', 
-              color: '#374151',
-              fontSize: '14px'
-            }}>
-              Vehicle Description <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-            <textarea
-              name="description"
-              placeholder="Tell potential renters about your car's features, condition, mileage, and any special amenities..."
-              value={formData.description}
-              onChange={handleInput}
-              required
-              rows="4"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '10px',
-                border: '1px solid #e5e7eb',
-                fontSize: '15px',
-                outline: 'none',
-                resize: 'vertical',
-                fontFamily: 'inherit',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          <div style={{ 
-            padding: '20px', 
-            background: '#f9fafb', 
-            borderRadius: '10px', 
-            border: '1px solid #e5e7eb',
-            marginBottom: '30px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div>
-              <label style={{ 
-                display: 'block', 
-                fontWeight: '600', 
-                color: '#374151',
-                fontSize: '14px',
-                marginBottom: '4px'
-              }}>
-                Available for Booking
-              </label>
-              <p style={{ 
-                fontSize: '13px', 
-                color: '#6b7280' 
-              }}>
-                Make this vehicle visible to customers immediately
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              name="available"
-              checked={formData.available}
-              onChange={handleInput}
-              style={{
-                width: '20px',
-                height: '20px',
-                cursor: 'pointer',
-                accentColor: '#8b5cf6'
-              }}
-            />
-          </div>
-
-          <div style={{ 
-            display: 'flex', 
-            gap: '15px',
-            paddingTop: '20px',
-            borderTop: '1px solid #e5e7eb'
-          }}>
-            <button
-              type="button"
-              onClick={() => navigate('/my-cars')}
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                border: '1px solid #d1d5db',
-                background: 'white',
-                color: '#374151',
-                fontWeight: '600',
-                fontSize: '15px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
-              onMouseLeave={(e) => e.target.style.background = 'white'}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                flex: 1,
-                padding: '14px 28px',
-                borderRadius: '10px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                fontWeight: '600',
-                fontSize: '15px',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.7 : 1,
-                boxShadow: '0 4px 15px rgba(102,126,234,0.4)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (!loading) {
-                  e.target.style.transform = 'translateY(-2px)'
-                  e.target.style.boxShadow = '0 6px 20px rgba(102,126,234,0.5)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)'
-                e.target.style.boxShadow = '0 4px 15px rgba(102,126,234,0.4)'
-              }}
-            >
-              {loading ? 'Adding Vehicle...' : 'Add Vehicle to Fleet'}
-            </button>
-          </div>
-        </form>
       </div>
+
+     
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative">
+            <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-3xl font-bold">×</button>
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">Confirm Booking</h3>
+            <div className="bg-slate-50 p-5 rounded-xl mb-6 border border-slate-200">
+              <p className="text-slate-600 mb-2 text-sm">Vehicle</p>
+              <p className="font-bold text-slate-900 text-lg mb-4">{car.name}</p>
+              <div className="flex justify-between items-center border-t border-slate-200 pt-3">
+                <p className="text-slate-600">Total Price</p>
+                <p className="font-bold text-orange-500 text-xl">${car.price}</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button onClick={handleBooking} className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors">Confirm</button>
+              <button onClick={() => setModalOpen(false)} className="flex-1 border border-slate-300 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-export default AddCar
+export default CarDetails
